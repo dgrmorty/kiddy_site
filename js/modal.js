@@ -58,6 +58,59 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Mobile swipe to close modal
+    modals.forEach(modal => {
+        const modalContent = modal.querySelector('.modal-content');
+        if (!modalContent) return;
+        
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isScrolling = false;
+        
+        modalContent.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+            isScrolling = false;
+        }, { passive: true });
+        
+        modalContent.addEventListener('touchmove', function(e) {
+            const currentY = e.touches[0].clientY;
+            const scrollTop = this.scrollTop;
+            const scrollHeight = this.scrollHeight;
+            const clientHeight = this.clientHeight;
+            
+            // Check if user is scrolling content
+            if (scrollTop > 0 || scrollTop < scrollHeight - clientHeight) {
+                isScrolling = true;
+                return;
+            }
+            
+            // Allow swipe down only from top
+            if (scrollTop === 0 && currentY > touchStartY) {
+                const diff = currentY - touchStartY;
+                if (diff > 0) {
+                    this.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+                }
+            }
+        }, { passive: true });
+        
+        modalContent.addEventListener('touchend', function(e) {
+            touchEndY = e.changedTouches[0].clientY;
+            const swipeDistance = touchEndY - touchStartY;
+            
+            // If not scrolling and swiped down more than 100px, close modal
+            if (!isScrolling && swipeDistance > 100) {
+                closeModal(modal);
+            } else {
+                // Reset transform
+                this.style.transform = '';
+            }
+            
+            touchStartY = 0;
+            touchEndY = 0;
+            isScrolling = false;
+        }, { passive: true });
+    });
+    
     // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
