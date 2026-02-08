@@ -15,10 +15,6 @@ desktop.ini
 *.log
 *.cache
 
-# Node modules (if any)
-node_modules/
-package-lock.json
-
 # Build files
 dist/
 build/
