@@ -5,18 +5,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const modals = document.querySelectorAll('.modal-overlay');
     const closeButtons = document.querySelectorAll('.modal-close-button');
     
+    // Store scroll position
+    let savedScrollPosition = 0;
+    
     // Open modal function
     function openModal(modal) {
         if (!modal) return;
         modal.classList.add('active');
-        document.body.classList.add('overflow-hidden');
+        // Prevent body scroll - save current scroll position
+        savedScrollPosition = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0;
+        
+        // Apply styles to prevent scrolling
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${savedScrollPosition}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+        // Also prevent scrolling on html element
+        document.documentElement.style.overflow = 'hidden';
     }
     
     // Close modal function
     function closeModal(modal) {
         if (!modal) return;
         modal.classList.remove('active');
-        document.body.classList.remove('overflow-hidden');
+        
+        // Remove all styles that prevent scrolling
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        
+        // Restore scroll position after a brief delay to ensure styles are removed
+        setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition);
+            savedScrollPosition = 0;
+        }, 10);
     }
     
     // Close all modals
@@ -121,13 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // FAQ accordion functionality - using existing structure
     // Find all FAQ items by looking for sections with bg-alabaster rounded-2xl that contain buttons
     const faqItems = document.querySelectorAll('section .bg-alabaster.rounded-2xl');
-    faqItems.forEach(item => {
+    faqItems.forEach((item, index) => {
         const button = item.querySelector('button');
         const content = item.querySelector('.overflow-hidden');
         const iconContainer = button?.querySelector('span:last-child');
         
         if (button && content) {
-            // Initialize closed state
+            // Initialize closed state for all items
             if (!content.style.maxHeight || content.style.maxHeight === '0px') {
                 content.style.maxHeight = '0px';
                 content.style.opacity = '0';
@@ -152,7 +180,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             otherIconContainer.style.backgroundColor = '';
                             otherIconContainer.style.color = '';
                         }
-                        otherItem.classList.remove('ring-2', 'ring-icy');
+                        otherItem.classList.remove('ring-2');
+                        otherItem.style.removeProperty('outline');
+                        otherItem.style.removeProperty('outline-offset');
                     }
                 });
                 
@@ -160,7 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (isOpen) {
                     content.style.maxHeight = '0px';
                     content.style.opacity = '0';
-                    item.classList.remove('ring-2', 'ring-icy');
+                    item.classList.remove('ring-2');
+                    item.style.removeProperty('outline');
+                    item.style.removeProperty('outline-offset');
                     if (iconContainer) {
                         iconContainer.style.transform = 'rotate(0deg)';
                         iconContainer.style.backgroundColor = '';
@@ -169,7 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     content.style.maxHeight = content.scrollHeight + 'px';
                     content.style.opacity = '1';
-                    item.classList.add('ring-2', 'ring-icy');
+                    // Добавляем красную обводку через inline стили (ring-2 ring-cherry/20)
+                    item.style.outline = '2px solid rgba(155, 27, 48, 0.2)';
+                    item.style.outlineOffset = '0px';
                     if (iconContainer) {
                         iconContainer.style.transform = 'rotate(45deg)';
                         iconContainer.style.backgroundColor = '#9B1B30';
